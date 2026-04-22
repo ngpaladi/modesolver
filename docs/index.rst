@@ -9,6 +9,8 @@ approach for solving electromagnetic mode problems in photonic chips.
    :maxdepth: 2
    :caption: Contents:
 
+   pinn
+   cli
    photonic_mode_solver
 
 Installation
