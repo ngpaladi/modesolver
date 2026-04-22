@@ -42,3 +42,12 @@ html_theme = 'sphinx_rtd_theme'
 
 # HTML static paths
 html_static_path = ['_static']
+
+# Autodoc settings
+autodoc_default_options = {
+    'members': True,
+    'member-order': 'bysource',
+    'special-members': '__init__',
+    'undoc-members': True,
+    'exclude-members': '__weakref__'
+}
