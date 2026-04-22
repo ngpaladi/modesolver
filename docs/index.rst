@@ -10,6 +10,7 @@ approach for solving electromagnetic mode problems in photonic chips.
    :caption: Contents:
 
    pinn
+   pinn_training
    cli
    photonic_mode_solver
 

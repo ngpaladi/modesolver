@@ -317,7 +317,7 @@ class PINN:
     def _evaluate_analytical_solution(self, points, analytical_func):
         """Evaluate analytical solution at given points with higher fidelity."""
         # This would evaluate the actual analytical function at the points
-        # For now, return a more realistic evaluation
+        # For now, we'll return properly shaped data
         
         # In a real implementation, this would:
         # 1. Evaluate the actual analytical function for the given points
@@ -428,73 +428,3 @@ class PINN:
             for param_group in self.optimizer.param_groups:
                 param_group['lr'] = learning_rate
                 param_group['weight_decay'] = weight_decay
-
-class PINN:
-    """Physics-Informed Neural Network for photonic mode solving."""
-    
-    def __init__(self, input_dim=2, hidden_layers=[64, 64, 64], output_dim=1):
-        """
-        Initialize PINN.
-        
-        Args:
-            input_dim: Dimension of input coordinates (x,y)
-            hidden_layers: List of hidden layer sizes
-            output_dim: Dimension of output (field amplitude)
-        """
-        if HAS_TORCH:
-            # Real implementation with PyTorch
-            layers = []
-            prev_dim = input_dim
-            
-            # Create hidden layers
-            for hidden_dim in hidden_layers:
-                layers.append(nn.Linear(prev_dim, hidden_dim))
-                layers.append(nn.Tanh())
-                prev_dim = hidden_dim
-                
-            # Output layer
-            layers.append(nn.Linear(prev_dim, output_dim))
-            
-            self.network = nn.Sequential(*layers)
-        else:
-            # Mock implementation for environments without PyTorch
-            self.network = MockSequential([])
-        
-    def forward(self, x):
-        """Forward pass through the network."""
-        if HAS_TORCH:
-            return self.network(x)
-        else:
-            return x
-        
-    def predict(self, structure, frequency=None):
-        """
-        Predict field distribution for given structure.
-        
-        Args:
-            structure: Photonic structure
-            frequency: Operating frequency
-            
-        Returns:
-            Predicted field distribution
-        """
-        # This is a simplified version - in practice this would:
-        # 1. Generate coordinates based on structure
-        # 2. Evaluate PINN at those points
-        # 3. Return field distribution
-        
-        # For now, return a placeholder
-        return np.random.rand(100)  # Placeholder
-        
-    def train(self, structure, frequency, analytical_solution):
-        """
-        Train PINN using analytical solutions.
-        
-        Args:
-            structure: Photonic structure
-            frequency: Operating frequency
-            analytical_solution: Known analytical solution
-        """
-        # This would implement PINN training with physics-informed loss
-        # In a real implementation, this would use PyTorch
-        pass

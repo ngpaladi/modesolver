@@ -1,8 +1,10 @@
-# PINN Implementation
+PINN Implementation
+===================
 
 The Physics-Informed Neural Network (PINN) implementation is a core component of this photonic mode solver package. It provides a machine learning approach to solve electromagnetic mode problems by incorporating physical laws directly into the neural network architecture.
 
-## Architecture
+Architecture
+------------
 
 The PINN uses a feedforward neural network with the following characteristics:
 
@@ -10,7 +12,8 @@ The PINN uses a feedforward neural network with the following characteristics:
 - Hidden layers: Multiple dense layers with Tanh activation functions
 - Output layer: Field amplitude predictions for electromagnetic modes
 
-## Physics-Informed Loss Functions
+Physics-Informed Loss Functions
+-------------------------------
 
 The PINN incorporates physics through specialized loss functions that ensure the network solutions satisfy the underlying PDEs:
 
@@ -18,29 +21,30 @@ The PINN incorporates physics through specialized loss functions that ensure the
 - **Boundary Loss**: Ensures proper boundary conditions are satisfied
 - **Initial Loss**: For time-dependent problems (if applicable)
 
-## Usage Example
+Usage Example
+-------------
 
-```python
-from photonic_mode_solver.pinn import PINN
-import torch
+.. code-block:: python
 
-# Initialize PINN
-pinn = PINN(input_dim=2, hidden_dim=64, output_dim=1)
+   from photonic_mode_solver.pinn import PINN
+   import torch
 
-# Train the PINN on photonic mode data
-# (Training process requires a dataset - see dataset generator)
-```
+   # Initialize PINN
+   pinn = PINN(input_dim=2, hidden_dim=64, output_dim=1)
 
-## Integration with FEM
+   # Train the PINN on photonic mode data
+   # (Training process requires a dataset - see dataset generator)
+
+Integration with FEM
+--------------------
 
 The PINN serves as an initial guess provider for the FEM solver:
 - PINN provides fast, approximate solutions
 - FEM refines solutions for high accuracy
 - Hybrid approach accelerates convergence
 
-## API Reference
-
-### `PINN` Class
+API Reference
+-------------
 
 .. autoclass:: photonic_mode_solver.pinn.PINN
    :members:

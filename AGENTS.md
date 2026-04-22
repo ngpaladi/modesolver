@@ -23,12 +23,30 @@ This repository implements a mode solver for electromagnetic waves in photonic c
 - Boundary conditions require careful implementation for accuracy
 - GPU acceleration recommended for performance
 
+## PINN Implementation Details
+- PINN architecture uses feedforward neural networks with Tanh activation
+- Physics-informed loss functions incorporate Maxwell's equations
+- Training supports both PyTorch and mock environments
+- Dataset generation capabilities for synthetic training data
+- Integration with FEM solver for hybrid approach
+
+## Dataset Generation
+- Synthetic datasets for rectangular and circular waveguides
+- Analytical solutions for validation
+- Training points with boundary condition enforcement
+- KLayout-compatible GDS file generation
+- Support for multiple material combinations
+
 ## Development Commands
 - Run tests: python -m pytest (if test structure exists)
 - Lint code: ruff check . (if linting configured)
 - Typecheck: mypy . (if mypy configured)
 - Format code: black . (if formatter configured)
+- Build documentation: sphinx-build docs docs/_build
+- Train PINNs: python train_pinn.py
 
 ## Important Constraints
 - PINN approach requires training data generation for initial calibration
 - Integration between PINN and FEM solvers requires careful handling of data formats
+- Training requires proper physics-informed loss functions
+- Dataset generation must provide sufficient diversity for generalization
