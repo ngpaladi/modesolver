@@ -3,6 +3,3 @@ sphinx-rtd-theme
 numpy
 scipy
 matplotlib
-torch
-tensorflow
-gdstk
