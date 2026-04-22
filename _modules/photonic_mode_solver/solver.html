@@ -1,0 +1,402 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>photonic_mode_solver.solver &mdash; photonic-mode-solver 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            photonic-mode-solver
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">photonic-mode-solver</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">photonic_mode_solver.solver</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for photonic_mode_solver.solver</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Main Mode Solver Class</span>
+<span class="sd">=====================</span>
+
+<span class="sd">Hybrid FEM-PINN solver for photonic mode problems.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.fem</span><span class="w"> </span><span class="kn">import</span> <span class="n">FEMSolver</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.pinn</span><span class="w"> </span><span class="kn">import</span> <span class="n">PINN</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.propagation</span><span class="w"> </span><span class="kn">import</span> <span class="n">advanced_propagate_beam</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.validation</span><span class="w"> </span><span class="kn">import</span> <span class="n">ValidationFramework</span><span class="p">,</span> <span class="n">AnalyticalSolutions</span>
+
+
+<div class="viewcode-block" id="ModeSolver">
+<a class="viewcode-back" href="../../photonic_mode_solver.html#photonic_mode_solver.solver.ModeSolver">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ModeSolver</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Main mode solver that combines FEM and PINN approaches.&quot;&quot;&quot;</span>
+    
+<div class="viewcode-block" id="ModeSolver.__init__">
+<a class="viewcode-back" href="../../photonic_mode_solver.html#photonic_mode_solver.solver.ModeSolver.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">use_pinn_initialization</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the mode solver.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            use_pinn_initialization: Whether to use PINN for initial guess</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_pinn_initialization</span> <span class="o">=</span> <span class="n">use_pinn_initialization</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fem_solver</span> <span class="o">=</span> <span class="n">FEMSolver</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pinn</span> <span class="o">=</span> <span class="n">PINN</span><span class="p">()</span> <span class="k">if</span> <span class="n">use_pinn_initialization</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validation_framework</span> <span class="o">=</span> <span class="n">ValidationFramework</span><span class="p">()</span></div>
+
+        
+<div class="viewcode-block" id="ModeSolver.solve">
+<a class="viewcode-back" href="../../photonic_mode_solver.html#photonic_mode_solver.solver.ModeSolver.solve">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">structure</span><span class="p">,</span> <span class="n">frequency</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">num_modes</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Solve for electromagnetic modes in the given structure.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            structure: Photonic structure definition</span>
+<span class="sd">            frequency: Operating frequency</span>
+<span class="sd">            num_modes: Number of modes to compute</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Mode solutions with field distributions and propagation constants</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Use PINN for initial guess if enabled</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_pinn_initialization</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">pinn</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">initial_guess</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pinn</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">structure</span><span class="p">,</span> <span class="n">frequency</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fem_solver</span><span class="o">.</span><span class="n">set_initial_guess</span><span class="p">(</span><span class="n">initial_guess</span><span class="p">)</span>
+            
+        <span class="c1"># Solve with FEM</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fem_solver</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">structure</span><span class="p">,</span> <span class="n">frequency</span><span class="p">,</span> <span class="n">num_modes</span><span class="p">)</span></div>
+
+        
+<div class="viewcode-block" id="ModeSolver.solve_no_pinn">
+<a class="viewcode-back" href="../../photonic_mode_solver.html#photonic_mode_solver.solver.ModeSolver.solve_no_pinn">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">solve_no_pinn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">structure</span><span class="p">,</span> <span class="n">frequency</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">num_modes</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Solve for electromagnetic modes without using PINN initialization.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            structure: Photonic structure definition</span>
+<span class="sd">            frequency: Operating frequency</span>
+<span class="sd">            num_modes: Number of modes to compute</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Mode solutions with field distributions and propagation constants</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Direct FEM solution without PINN initialization</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fem_solver</span><span class="o">.</span><span class="n">set_initial_guess</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fem_solver</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">structure</span><span class="p">,</span> <span class="n">frequency</span><span class="p">,</span> <span class="n">num_modes</span><span class="p">)</span></div>
+
+        
+<div class="viewcode-block" id="ModeSolver.validate_with_analytical">
+<a class="viewcode-back" href="../../photonic_mode_solver.html#photonic_mode_solver.solver.ModeSolver.validate_with_analytical">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate_with_analytical</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">structure</span><span class="p">,</span> <span class="n">expected_modes</span><span class="p">,</span> 
+                               <span class="n">return_metrics</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Validate solution against analytical solutions.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            structure: Photonic structure</span>
+<span class="sd">            expected_modes: Analytical mode solutions</span>
+<span class="sd">            return_metrics: Whether to return validation metrics</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Validation results or metrics</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># This method compares computed modes with analytical solutions</span>
+        <span class="c1"># For now, we&#39;ll provide the framework for validation</span>
+        
+        <span class="c1"># In a real implementation, this would:</span>
+        <span class="c1"># 1. Compute modes using current solver</span>
+        <span class="c1"># 2. Compare against expected analytical solutions</span>
+        <span class="c1"># 3. Return accuracy metrics</span>
+        
+        <span class="k">if</span> <span class="n">return_metrics</span><span class="p">:</span>
+            <span class="n">computed_modes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">structure</span><span class="p">,</span> 
+                                      <span class="n">frequency</span><span class="o">=</span><span class="n">expected_modes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;frequency&#39;</span><span class="p">,</span> <span class="mf">1.55</span><span class="p">))</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">validation_framework</span><span class="o">.</span><span class="n">validate_against_analytical</span><span class="p">(</span>
+                <span class="n">computed_modes</span><span class="p">,</span> <span class="n">expected_modes</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>  <span class="c1"># Validation passed</span></div>
+
+    
+<div class="viewcode-block" id="ModeSolver.benchmark_validation">
+<a class="viewcode-back" href="../../photonic_mode_solver.html#photonic_mode_solver.solver.ModeSolver.benchmark_validation">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">benchmark_validation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test_cases</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Run benchmark validation against standard test cases.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            test_cases: List of test cases with known solutions</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Benchmark validation results</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">validation_framework</span><span class="o">.</span><span class="n">benchmark_validation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test_cases</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="ModeSolver.simulate_photon_propagation">
+<a class="viewcode-back" href="../../photonic_mode_solver.html#photonic_mode_solver.solver.ModeSolver.simulate_photon_propagation">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">simulate_photon_propagation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">structure</span><span class="p">,</span> <span class="n">wavelengths</span><span class="p">,</span> <span class="n">beam_width</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> 
+                                  <span class="n">propagation_distance</span><span class="o">=</span><span class="mf">100.0</span><span class="p">,</span> <span class="n">propagation_method</span><span class="o">=</span><span class="s1">&#39;fourier&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Simulate photon propagation along a straight waveguide.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            structure: Photonic structure</span>
+<span class="sd">            wavelengths: Array of wavelengths to simulate</span>
+<span class="sd">            beam_width: Initial beam width in micrometers</span>
+<span class="sd">            propagation_distance: Propagation distance in micrometers</span>
+<span class="sd">            propagation_method: Method to use (&#39;fourier&#39;, &#39;tmm&#39;, &#39;fdtd&#39;)</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Propagation results for each wavelength</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
+        
+        <span class="k">for</span> <span class="n">wavelength</span> <span class="ow">in</span> <span class="n">wavelengths</span><span class="p">:</span>
+            <span class="c1"># Compute modes for this wavelength</span>
+            <span class="n">modes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">structure</span><span class="p">,</span> <span class="n">frequency</span><span class="o">=</span><span class="n">wavelength</span><span class="p">)</span>
+            
+            <span class="c1"># Create beam propagation simulation</span>
+            <span class="n">beam_propagation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_propagate_beam</span><span class="p">(</span>
+                <span class="n">modes</span><span class="p">,</span> <span class="n">wavelength</span><span class="p">,</span> <span class="n">beam_width</span><span class="p">,</span> <span class="n">propagation_distance</span><span class="p">,</span> <span class="n">propagation_method</span>
+            <span class="p">)</span>
+            
+            <span class="n">results</span><span class="p">[</span><span class="n">wavelength</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;modes&#39;</span><span class="p">:</span> <span class="n">modes</span><span class="p">,</span>
+                <span class="s1">&#39;beam_propagation&#39;</span><span class="p">:</span> <span class="n">beam_propagation</span>
+            <span class="p">}</span>
+            
+        <span class="k">return</span> <span class="n">results</span></div>
+
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_propagate_beam</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">modes</span><span class="p">,</span> <span class="n">wavelength</span><span class="p">,</span> <span class="n">beam_width</span><span class="p">,</span> <span class="n">distance</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;fourier&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Propagate a beam through the waveguide using specified method.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            modes: Computed modes</span>
+<span class="sd">            wavelength: Wavelength of the beam</span>
+<span class="sd">            beam_width: Initial beam width</span>
+<span class="sd">            distance: Propagation distance</span>
+<span class="sd">            method: Propagation method</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Beam propagation results</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Create a photon source</span>
+        <span class="n">beam_source</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;wavelength&#39;</span><span class="p">:</span> <span class="n">wavelength</span><span class="p">,</span>
+            <span class="s1">&#39;beam_width&#39;</span><span class="p">:</span> <span class="n">beam_width</span><span class="p">,</span>
+            <span class="s1">&#39;beam_profile&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_beam_profile</span><span class="p">(</span><span class="n">beam_width</span><span class="p">)</span>
+        <span class="p">}</span>
+        
+        <span class="c1"># Use advanced propagation methods</span>
+        <span class="k">if</span> <span class="n">method</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;tmm&#39;</span><span class="p">,</span> <span class="s1">&#39;fdtd&#39;</span><span class="p">,</span> <span class="s1">&#39;fourier&#39;</span><span class="p">]:</span>
+            <span class="c1"># This will use the advanced propagation methods</span>
+            <span class="k">return</span> <span class="n">advanced_propagate_beam</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">,</span> <span class="n">modes</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;structure&#39;</span><span class="p">],</span> <span class="p">[</span><span class="n">wavelength</span><span class="p">],</span> <span class="n">beam_source</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">distance</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Fallback to simplified model</span>
+            <span class="n">propagation_results</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;wavelength&#39;</span><span class="p">:</span> <span class="n">wavelength</span><span class="p">,</span>
+                <span class="s1">&#39;beam_width&#39;</span><span class="p">:</span> <span class="n">beam_width</span><span class="p">,</span>
+                <span class="s1">&#39;distance&#39;</span><span class="p">:</span> <span class="n">distance</span><span class="p">,</span>
+                <span class="s1">&#39;mode_coupling&#39;</span><span class="p">:</span> <span class="p">{},</span>
+                <span class="s1">&#39;field_evolution&#39;</span><span class="p">:</span> <span class="p">[]</span>
+            <span class="p">}</span>
+            
+            <span class="c1"># Simple model: calculate beam evolution based on mode coupling</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">mode</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">modes</span><span class="p">):</span>
+                <span class="n">propagation_results</span><span class="p">[</span><span class="s1">&#39;mode_coupling&#39;</span><span class="p">][</span><span class="sa">f</span><span class="s1">&#39;mode_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s1">&#39;propagation_constant&#39;</span><span class="p">:</span> <span class="n">mode</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;propagation_constant&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                    <span class="s1">&#39;field_profile&#39;</span><span class="p">:</span> <span class="n">mode</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;field&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([]))</span>
+                <span class="p">}</span>
+            
+            <span class="k">return</span> <span class="n">propagation_results</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_generate_beam_profile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">beam_width</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate a beam profile for the photon source.&quot;&quot;&quot;</span>
+        <span class="c1"># Create a Gaussian beam profile</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="n">beam_width</span><span class="p">,</span> <span class="n">beam_width</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="n">beam_width</span><span class="p">,</span> <span class="n">beam_width</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">X</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">Y</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">beam_width</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+    
+<div class="viewcode-block" id="ModeSolver.insert_wavepacket">
+<a class="viewcode-back" href="../../photonic_mode_solver.html#photonic_mode_solver.solver.ModeSolver.insert_wavepacket">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">insert_wavepacket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">structure</span><span class="p">,</span> <span class="n">wavelength</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> 
+                         <span class="n">beam_width</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">beam_profile</span><span class="o">=</span><span class="s1">&#39;gaussian&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Insert a wavepacket at a specific point in the waveguide.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            structure: Photonic structure</span>
+<span class="sd">            wavelength: Wavelength of the wavepacket</span>
+<span class="sd">            position: Position where wavepacket is inserted (x, y)</span>
+<span class="sd">            beam_width: Beam width in micrometers</span>
+<span class="sd">            beam_profile: Type of beam profile (&#39;gaussian&#39;, &#39;plane&#39;, etc.)</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Wavepacket definition</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">wavepacket</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;wavelength&#39;</span><span class="p">:</span> <span class="n">wavelength</span><span class="p">,</span>
+            <span class="s1">&#39;position&#39;</span><span class="p">:</span> <span class="n">position</span><span class="p">,</span>
+            <span class="s1">&#39;beam_width&#39;</span><span class="p">:</span> <span class="n">beam_width</span><span class="p">,</span>
+            <span class="s1">&#39;beam_profile&#39;</span><span class="p">:</span> <span class="n">beam_profile</span><span class="p">,</span>
+            <span class="s1">&#39;intensity_profile&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_beam_profile</span><span class="p">(</span><span class="n">beam_width</span><span class="p">)</span>
+        <span class="p">}</span>
+        
+        <span class="k">return</span> <span class="n">wavepacket</span></div>
+
+    
+<div class="viewcode-block" id="ModeSolver.simulate_wavefront_propagation">
+<a class="viewcode-back" href="../../photonic_mode_solver.html#photonic_mode_solver.solver.ModeSolver.simulate_wavefront_propagation">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">simulate_wavefront_propagation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">structure</span><span class="p">,</span> <span class="n">wavelengths</span><span class="p">,</span> 
+                                     <span class="n">num_steps</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">max_distance</span><span class="o">=</span><span class="mf">100.0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Simulate wavefront propagation through the waveguide with visualizations.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            structure: Photonic structure</span>
+<span class="sd">            wavelengths: Array of wavelengths to simulate</span>
+<span class="sd">            num_steps: Number of propagation steps</span>
+<span class="sd">            max_distance: Maximum propagation distance</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Wavefront propagation data for visualization</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">propagation_data</span> <span class="o">=</span> <span class="p">{}</span>
+        
+        <span class="k">for</span> <span class="n">wavelength</span> <span class="ow">in</span> <span class="n">wavelengths</span><span class="p">:</span>
+            <span class="c1"># Compute modes for this wavelength</span>
+            <span class="n">modes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">structure</span><span class="p">,</span> <span class="n">frequency</span><span class="o">=</span><span class="n">wavelength</span><span class="p">)</span>
+            
+            <span class="c1"># Simulate propagation at multiple steps</span>
+            <span class="n">distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_distance</span><span class="p">,</span> <span class="n">num_steps</span><span class="p">)</span>
+            <span class="n">wavefront_data</span> <span class="o">=</span> <span class="p">[]</span>
+            
+            <span class="k">for</span> <span class="n">distance</span> <span class="ow">in</span> <span class="n">distances</span><span class="p">:</span>
+                <span class="c1"># In a real implementation, this would compute field evolution</span>
+                <span class="c1"># Here we create synthetic data for visualization</span>
+                <span class="n">wavefront</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s1">&#39;distance&#39;</span><span class="p">:</span> <span class="n">distance</span><span class="p">,</span>
+                    <span class="s1">&#39;field&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_propagated_field</span><span class="p">(</span><span class="n">distance</span><span class="p">,</span> <span class="n">wavelength</span><span class="p">),</span>
+                    <span class="s1">&#39;modes&#39;</span><span class="p">:</span> <span class="n">modes</span>
+                <span class="p">}</span>
+                <span class="n">wavefront_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">wavefront</span><span class="p">)</span>
+            
+            <span class="n">propagation_data</span><span class="p">[</span><span class="n">wavelength</span><span class="p">]</span> <span class="o">=</span> <span class="n">wavefront_data</span>
+            
+        <span class="k">return</span> <span class="n">propagation_data</span></div>
+
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_generate_propagated_field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">distance</span><span class="p">,</span> <span class="n">wavelength</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate a synthetic field for visualization.&quot;&quot;&quot;</span>
+        <span class="c1"># This would compute actual field propagation in real implementation</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="c1"># Create a wave-like pattern that propagates</span>
+        <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">wavelength</span> <span class="o">*</span> <span class="n">distance</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">X</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">Y</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mi">4</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">field</span>
+    
+<div class="viewcode-block" id="ModeSolver.get_solver_summary">
+<a class="viewcode-back" href="../../photonic_mode_solver.html#photonic_mode_solver.solver.ModeSolver.get_solver_summary">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_solver_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get summary of solver configuration.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;use_pinn_initialization&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_pinn_initialization</span><span class="p">,</span>
+            <span class="s1">&#39;fem_solver_config&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">fem_solver</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">,</span>
+            <span class="s1">&#39;pinn_config&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">pinn</span><span class="o">.</span><span class="n">get_model_summary</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pinn</span> <span class="k">else</span> <span class="s1">&#39;None&#39;</span>
+        <span class="p">}</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Photonic Solver Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

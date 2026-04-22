@@ -1,0 +1,307 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>photonic_mode_solver.klayout &mdash; photonic-mode-solver 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            photonic-mode-solver
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">photonic-mode-solver</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">photonic_mode_solver.klayout</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for photonic_mode_solver.klayout</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">KLayout Geometry Handling for Photonic Structures</span>
+<span class="sd">===============================================</span>
+
+<span class="sd">Support for reading photonic structures from KLayout-compatible GDS files</span>
+<span class="sd">and integrating with KLayout&#39;s cell hierarchy and layer management.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">GDSGeometryReader</span>
+
+<div class="viewcode-block" id="KLayoutGeometryReader">
+<a class="viewcode-back" href="../../photonic_mode_solver.html#photonic_mode_solver.klayout.KLayoutGeometryReader">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">KLayoutGeometryReader</span><span class="p">(</span><span class="n">GDSGeometryReader</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Read and process KLayout-compatible GDS files with enhanced features.&quot;&quot;&quot;</span>
+    
+<div class="viewcode-block" id="KLayoutGeometryReader.__init__">
+<a class="viewcode-back" href="../../photonic_mode_solver.html#photonic_mode_solver.klayout.KLayoutGeometryReader.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize KLayout geometry reader.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            file_path: Path to GDS file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">klayout_cells</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cell_hierarchy</span> <span class="o">=</span> <span class="p">{}</span></div>
+
+        
+<div class="viewcode-block" id="KLayoutGeometryReader.read_file">
+<a class="viewcode-back" href="../../photonic_mode_solver.html#photonic_mode_solver.klayout.KLayoutGeometryReader.read_file">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">read_file</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read the GDS file with KLayout-specific enhancements.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># First try standard gdstk approach</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">read_file</span><span class="p">()</span>
+            
+            <span class="c1"># If successful, enhance with KLayout-specific features</span>
+            <span class="k">if</span> <span class="n">result</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_enhance_with_klayout_features</span><span class="p">()</span>
+                
+            <span class="k">return</span> <span class="n">result</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error reading GDS file with KLayout support: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+
+            
+    <span class="k">def</span><span class="w"> </span><span class="nf">_enhance_with_klayout_features</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Enhance geometry reading with KLayout-specific capabilities.&quot;&quot;&quot;</span>
+        <span class="c1"># This would handle KLayout-specific features like:</span>
+        <span class="c1"># 1. Cell hierarchy management</span>
+        <span class="c1"># 2. KLayout-specific layer properties</span>
+        <span class="c1"># 3. Advanced shape transformations</span>
+        
+        <span class="c1"># Placeholder for KLayout-specific enhancements</span>
+        <span class="k">pass</span>
+        
+<div class="viewcode-block" id="KLayoutGeometryReader.extract_klayout_info">
+<a class="viewcode-back" href="../../photonic_mode_solver.html#photonic_mode_solver.klayout.KLayoutGeometryReader.extract_klayout_info">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">extract_klayout_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+                           <span class="n">waveguide_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                           <span class="n">waveguide_datatype</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                           <span class="n">cell_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extract KLayout-specific waveguide information.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            waveguide_layer: Layer number for waveguides</span>
+<span class="sd">            waveguide_datatype: Data type for waveguides</span>
+<span class="sd">            cell_name: Specific cell to extract from</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Dictionary with KLayout-enhanced structure parameters</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Extract information with KLayout-specific enhancements</span>
+        <span class="n">base_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_waveguide_info</span><span class="p">(</span><span class="n">waveguide_layer</span><span class="p">,</span> <span class="n">waveguide_datatype</span><span class="p">)</span>
+        
+        <span class="c1"># Add KLayout-specific enhancements</span>
+        <span class="n">klayout_info</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;klayout_features&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;cell_hierarchy&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_cell_hierarchy</span><span class="p">(),</span>
+                <span class="s1">&#39;layer_properties&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_layer_properties</span><span class="p">(),</span>
+                <span class="s1">&#39;transformation_matrices&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_transformations</span><span class="p">()</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        
+        <span class="k">return</span> <span class="p">{</span><span class="o">**</span><span class="n">base_info</span><span class="p">,</span> <span class="o">**</span><span class="n">klayout_info</span><span class="p">}</span></div>
+
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_cell_hierarchy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get KLayout cell hierarchy information.&quot;&quot;&quot;</span>
+        <span class="c1"># Placeholder for cell hierarchy extraction</span>
+        <span class="k">return</span> <span class="p">{}</span>
+        
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_layer_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get layer properties specific to KLayout.&quot;&quot;&quot;</span>
+        <span class="c1"># Placeholder for layer property extraction</span>
+        <span class="k">return</span> <span class="p">{}</span>
+        
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_transformations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get transformation matrices for KLayout cells.&quot;&quot;&quot;</span>
+        <span class="c1"># Placeholder for transformation extraction</span>
+        <span class="k">return</span> <span class="p">[]</span></div>
+
+
+<div class="viewcode-block" id="KLayoutWaveguideStructure">
+<a class="viewcode-back" href="../../photonic_mode_solver.html#photonic_mode_solver.klayout.KLayoutWaveguideStructure">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">KLayoutWaveguideStructure</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Waveguide structure with full KLayout support.&quot;&quot;&quot;</span>
+    
+<div class="viewcode-block" id="KLayoutWaveguideStructure.__init__">
+<a class="viewcode-back" href="../../photonic_mode_solver.html#photonic_mode_solver.klayout.KLayoutWaveguideStructure.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gds_file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">layer</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> 
+                 <span class="n">material</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">klayout_cell_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize from KLayout GDS file.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            gds_file_path: Path to GDS file (KLayout compatible)</span>
+<span class="sd">            layer: Layer number containing waveguide geometry</span>
+<span class="sd">            material: Material properties for the waveguide</span>
+<span class="sd">            klayout_cell_name: Specific KLayout cell name to use</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gds_reader</span> <span class="o">=</span> <span class="n">KLayoutGeometryReader</span><span class="p">(</span><span class="n">gds_file_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layer</span> <span class="o">=</span> <span class="n">layer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">material</span> <span class="o">=</span> <span class="n">material</span> <span class="ow">or</span> <span class="p">{</span><span class="s1">&#39;n&#39;</span><span class="p">:</span> <span class="mf">3.4</span><span class="p">,</span> <span class="s1">&#39;loss&#39;</span><span class="p">:</span> <span class="mf">0.01</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">klayout_cell_name</span> <span class="o">=</span> <span class="n">klayout_cell_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parse_gds_geometry</span><span class="p">()</span></div>
+
+        
+    <span class="k">def</span><span class="w"> </span><span class="nf">_parse_gds_geometry</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse the GDS geometry with KLayout enhancements.&quot;&quot;&quot;</span>
+        <span class="c1"># Extract structure parameters from GDS file using KLayout features</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">geometry_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gds_reader</span><span class="o">.</span><span class="n">extract_klayout_info</span><span class="p">(</span>
+            <span class="n">waveguide_layer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">layer</span><span class="p">,</span>
+            <span class="n">cell_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">klayout_cell_name</span>
+        <span class="p">)</span>
+        
+        <span class="c1"># Get dimensions and create structure parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_width</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_height</span><span class="p">()</span>
+        
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_width</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract waveguide width from GDS with KLayout enhancements.&quot;&quot;&quot;</span>
+        <span class="c1"># Use KLayout-specific geometric analysis</span>
+        <span class="k">return</span> <span class="mf">0.5</span>  <span class="c1"># Placeholder</span>
+        
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_height</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract waveguide height from GDS with KLayout enhancements.&quot;&quot;&quot;</span>
+        <span class="c1"># Use KLayout-specific geometric analysis</span>
+        <span class="k">return</span> <span class="mf">0.2</span>  <span class="c1"># Placeholder</span>
+        
+<div class="viewcode-block" id="KLayoutWaveguideStructure.get_mesh">
+<a class="viewcode-back" href="../../photonic_mode_solver.html#photonic_mode_solver.klayout.KLayoutWaveguideStructure.get_mesh">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_mesh</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate mesh from GDS geometry with KLayout enhancements.&quot;&quot;&quot;</span>
+        <span class="c1"># Create mesh from GDS geometry using KLayout-specific features</span>
+        <span class="c1"># This would use KLayout&#39;s mesh generation capabilities</span>
+        <span class="k">pass</span></div>
+
+        
+<div class="viewcode-block" id="KLayoutWaveguideStructure.get_materials">
+<a class="viewcode-back" href="../../photonic_mode_solver.html#photonic_mode_solver.klayout.KLayoutWaveguideStructure.get_materials">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_materials</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get material properties with KLayout layer information.&quot;&quot;&quot;</span>
+        <span class="c1"># Return materials with KLayout-specific layer properties</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;core&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">material</span><span class="p">,</span>
+            <span class="s1">&#39;cladding&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;n&#39;</span><span class="p">:</span> <span class="mf">1.45</span><span class="p">,</span> <span class="s1">&#39;loss&#39;</span><span class="p">:</span> <span class="mf">0.001</span><span class="p">}</span>
+        <span class="p">}</span></div>
+
+        
+<div class="viewcode-block" id="KLayoutWaveguideStructure.analytical_modes">
+<a class="viewcode-back" href="../../photonic_mode_solver.html#photonic_mode_solver.klayout.KLayoutWaveguideStructure.analytical_modes">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">analytical_modes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get analytical solutions with KLayout context.&quot;&quot;&quot;</span>
+        <span class="c1"># Use KLayout-enhanced analytical solution methods</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;fundamental_mode&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;propagation_constant&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+                <span class="s1">&#39;field_profile&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">y</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="p">}</span>
+        <span class="p">}</span></div>
+</div>
+
+
+<div class="viewcode-block" id="klayout_compatible_structure">
+<a class="viewcode-back" href="../../photonic_mode_solver.html#photonic_mode_solver.klayout.klayout_compatible_structure">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">klayout_compatible_structure</span><span class="p">(</span><span class="n">gds_file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> 
+                               <span class="n">layer</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                               <span class="n">material</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                               <span class="n">klayout_cell_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">KLayoutWaveguideStructure</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a photonic structure from KLayout-compatible GDS file.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        gds_file_path: Path to KLayout GDS file</span>
+<span class="sd">        layer: Layer number containing waveguide geometry</span>
+<span class="sd">        material: Material properties</span>
+<span class="sd">        klayout_cell_name: Specific KLayout cell to use</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        KLayoutWaveguideStructure object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">KLayoutWaveguideStructure</span><span class="p">(</span><span class="n">gds_file_path</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">material</span><span class="p">,</span> <span class="n">klayout_cell_name</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Photonic Solver Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

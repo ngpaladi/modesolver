@@ -1,0 +1,393 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>&lt;no title&gt; &mdash; photonic-mode-solver 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=01f34227"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="#" class="icon icon-home">
+            photonic-mode-solver
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">ModeSolver</span></code></a><ul>
+<li><a class="reference internal" href="#photonic_mode_solver.solver.ModeSolver.__init__"><code class="docutils literal notranslate"><span class="pre">ModeSolver.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#photonic_mode_solver.solver.ModeSolver.solve"><code class="docutils literal notranslate"><span class="pre">ModeSolver.solve()</span></code></a></li>
+<li><a class="reference internal" href="#photonic_mode_solver.solver.ModeSolver.solve_no_pinn"><code class="docutils literal notranslate"><span class="pre">ModeSolver.solve_no_pinn()</span></code></a></li>
+<li><a class="reference internal" href="#photonic_mode_solver.solver.ModeSolver.validate_with_analytical"><code class="docutils literal notranslate"><span class="pre">ModeSolver.validate_with_analytical()</span></code></a></li>
+<li><a class="reference internal" href="#photonic_mode_solver.solver.ModeSolver.benchmark_validation"><code class="docutils literal notranslate"><span class="pre">ModeSolver.benchmark_validation()</span></code></a></li>
+<li><a class="reference internal" href="#photonic_mode_solver.solver.ModeSolver.simulate_photon_propagation"><code class="docutils literal notranslate"><span class="pre">ModeSolver.simulate_photon_propagation()</span></code></a></li>
+<li><a class="reference internal" href="#photonic_mode_solver.solver.ModeSolver.insert_wavepacket"><code class="docutils literal notranslate"><span class="pre">ModeSolver.insert_wavepacket()</span></code></a></li>
+<li><a class="reference internal" href="#photonic_mode_solver.solver.ModeSolver.simulate_wavefront_propagation"><code class="docutils literal notranslate"><span class="pre">ModeSolver.simulate_wavefront_propagation()</span></code></a></li>
+<li><a class="reference internal" href="#photonic_mode_solver.solver.ModeSolver.get_solver_summary"><code class="docutils literal notranslate"><span class="pre">ModeSolver.get_solver_summary()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#photonic_mode_solver.structures.WaveguideStructure"><code class="docutils literal notranslate"><span class="pre">WaveguideStructure</span></code></a><ul>
+<li><a class="reference internal" href="#photonic_mode_solver.structures.WaveguideStructure.__init__"><code class="docutils literal notranslate"><span class="pre">WaveguideStructure.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#photonic_mode_solver.structures.WaveguideStructure.get_mesh"><code class="docutils literal notranslate"><span class="pre">WaveguideStructure.get_mesh()</span></code></a></li>
+<li><a class="reference internal" href="#photonic_mode_solver.structures.WaveguideStructure.get_materials"><code class="docutils literal notranslate"><span class="pre">WaveguideStructure.get_materials()</span></code></a></li>
+<li><a class="reference internal" href="#photonic_mode_solver.structures.WaveguideStructure.analytical_modes"><code class="docutils literal notranslate"><span class="pre">WaveguideStructure.analytical_modes()</span></code></a></li>
+<li><a class="reference internal" href="#photonic_mode_solver.structures.WaveguideStructure.create_photon_source"><code class="docutils literal notranslate"><span class="pre">WaveguideStructure.create_photon_source()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">photonic-mode-solver</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">&lt;no title&gt;</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <p># Sphinx documentation for photonic-mode-solver</p>
+<p>This documentation covers the photonic-mode-solver package which implements a hybrid Finite Element Method (FEM) and Physics-Informed Neural Network (PINN) approach for solving electromagnetic mode problems in photonic chips.</p>
+<p>## Installation</p>
+<p>The package can be installed with pip:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>photonic-mode-solver
+</pre></div>
+</div>
+<p>## Package Overview</p>
+<p>The package provides:</p>
+<ul class="simple">
+<li><p>Hybrid FEM-PINN mode solver implementation</p></li>
+<li><p>Support for rectangular and circular waveguide structures</p></li>
+<li><p>GDS/OASIS file geometry support</p></li>
+<li><p>KLayout compatibility</p></li>
+<li><p>Analytical solution validation framework</p></li>
+</ul>
+<p>## Modules</p>
+<p>### Core Components</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">photonic_mode_solver.solver</span></code>: Main hybrid solver class</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">photonic_mode_solver.fem</span></code>: FEM solver implementation</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">photonic_mode_solver.pinn</span></code>: PINN implementation</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">photonic_mode_solver.structures</span></code>: Waveguide structure definitions</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">photonic_mode_solver.geometry</span></code>: GDS/OASIS file support</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">photonic_mode_solver.klayout</span></code>: KLayout compatibility</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">photonic_mode_solver.validation</span></code>: Validation framework</p></li>
+</ul>
+<p>### Usage Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">photonic_mode_solver</span><span class="w"> </span><span class="kn">import</span> <span class="n">ModeSolver</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">photonic_mode_solver.structures</span><span class="w"> </span><span class="kn">import</span> <span class="n">WaveguideStructure</span>
+
+<span class="c1"># Create structure</span>
+<span class="n">structure</span> <span class="o">=</span> <span class="n">WaveguideStructure</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+
+<span class="c1"># Create hybrid solver</span>
+<span class="n">solver</span> <span class="o">=</span> <span class="n">ModeSolver</span><span class="p">(</span><span class="n">use_pinn_initialization</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Solve for modes</span>
+<span class="n">modes</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">structure</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>## API Reference</p>
+<p>### ModeSolver</p>
+<p>The main class that combines FEM and PINN approaches.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="photonic_mode_solver.solver.ModeSolver">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">photonic_mode_solver.solver.</span></span><span class="sig-name descname"><span class="pre">ModeSolver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_pinn_initialization</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/photonic_mode_solver/solver.html#ModeSolver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#photonic_mode_solver.solver.ModeSolver" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Main mode solver that combines FEM and PINN approaches.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="photonic_mode_solver.solver.ModeSolver.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_pinn_initialization</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/photonic_mode_solver/solver.html#ModeSolver.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#photonic_mode_solver.solver.ModeSolver.__init__" title="Link to this definition"></a></dt>
+<dd><p>Initialize the mode solver.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>use_pinn_initialization</strong> – Whether to use PINN for initial guess</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="photonic_mode_solver.solver.ModeSolver.solve">
+<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_modes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/photonic_mode_solver/solver.html#ModeSolver.solve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#photonic_mode_solver.solver.ModeSolver.solve" title="Link to this definition"></a></dt>
+<dd><p>Solve for electromagnetic modes in the given structure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>structure</strong> – Photonic structure definition</p></li>
+<li><p><strong>frequency</strong> – Operating frequency</p></li>
+<li><p><strong>num_modes</strong> – Number of modes to compute</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Mode solutions with field distributions and propagation constants</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="photonic_mode_solver.solver.ModeSolver.solve_no_pinn">
+<span class="sig-name descname"><span class="pre">solve_no_pinn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_modes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/photonic_mode_solver/solver.html#ModeSolver.solve_no_pinn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#photonic_mode_solver.solver.ModeSolver.solve_no_pinn" title="Link to this definition"></a></dt>
+<dd><p>Solve for electromagnetic modes without using PINN initialization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>structure</strong> – Photonic structure definition</p></li>
+<li><p><strong>frequency</strong> – Operating frequency</p></li>
+<li><p><strong>num_modes</strong> – Number of modes to compute</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Mode solutions with field distributions and propagation constants</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="photonic_mode_solver.solver.ModeSolver.validate_with_analytical">
+<span class="sig-name descname"><span class="pre">validate_with_analytical</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expected_modes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_metrics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/photonic_mode_solver/solver.html#ModeSolver.validate_with_analytical"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#photonic_mode_solver.solver.ModeSolver.validate_with_analytical" title="Link to this definition"></a></dt>
+<dd><p>Validate solution against analytical solutions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>structure</strong> – Photonic structure</p></li>
+<li><p><strong>expected_modes</strong> – Analytical mode solutions</p></li>
+<li><p><strong>return_metrics</strong> – Whether to return validation metrics</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Validation results or metrics</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="photonic_mode_solver.solver.ModeSolver.benchmark_validation">
+<span class="sig-name descname"><span class="pre">benchmark_validation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test_cases</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/photonic_mode_solver/solver.html#ModeSolver.benchmark_validation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#photonic_mode_solver.solver.ModeSolver.benchmark_validation" title="Link to this definition"></a></dt>
+<dd><p>Run benchmark validation against standard test cases.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>test_cases</strong> – List of test cases with known solutions</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Benchmark validation results</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="photonic_mode_solver.solver.ModeSolver.simulate_photon_propagation">
+<span class="sig-name descname"><span class="pre">simulate_photon_propagation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wavelengths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beam_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">propagation_distance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">propagation_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'fourier'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/photonic_mode_solver/solver.html#ModeSolver.simulate_photon_propagation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#photonic_mode_solver.solver.ModeSolver.simulate_photon_propagation" title="Link to this definition"></a></dt>
+<dd><p>Simulate photon propagation along a straight waveguide.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>structure</strong> – Photonic structure</p></li>
+<li><p><strong>wavelengths</strong> – Array of wavelengths to simulate</p></li>
+<li><p><strong>beam_width</strong> – Initial beam width in micrometers</p></li>
+<li><p><strong>propagation_distance</strong> – Propagation distance in micrometers</p></li>
+<li><p><strong>propagation_method</strong> – Method to use (‘fourier’, ‘tmm’, ‘fdtd’)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Propagation results for each wavelength</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="photonic_mode_solver.solver.ModeSolver.insert_wavepacket">
+<span class="sig-name descname"><span class="pre">insert_wavepacket</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wavelength</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beam_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beam_profile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'gaussian'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/photonic_mode_solver/solver.html#ModeSolver.insert_wavepacket"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#photonic_mode_solver.solver.ModeSolver.insert_wavepacket" title="Link to this definition"></a></dt>
+<dd><p>Insert a wavepacket at a specific point in the waveguide.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>structure</strong> – Photonic structure</p></li>
+<li><p><strong>wavelength</strong> – Wavelength of the wavepacket</p></li>
+<li><p><strong>position</strong> – Position where wavepacket is inserted (x, y)</p></li>
+<li><p><strong>beam_width</strong> – Beam width in micrometers</p></li>
+<li><p><strong>beam_profile</strong> – Type of beam profile (‘gaussian’, ‘plane’, etc.)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Wavepacket definition</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="photonic_mode_solver.solver.ModeSolver.simulate_wavefront_propagation">
+<span class="sig-name descname"><span class="pre">simulate_wavefront_propagation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wavelengths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_distance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/photonic_mode_solver/solver.html#ModeSolver.simulate_wavefront_propagation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#photonic_mode_solver.solver.ModeSolver.simulate_wavefront_propagation" title="Link to this definition"></a></dt>
+<dd><p>Simulate wavefront propagation through the waveguide with visualizations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>structure</strong> – Photonic structure</p></li>
+<li><p><strong>wavelengths</strong> – Array of wavelengths to simulate</p></li>
+<li><p><strong>num_steps</strong> – Number of propagation steps</p></li>
+<li><p><strong>max_distance</strong> – Maximum propagation distance</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Wavefront propagation data for visualization</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="photonic_mode_solver.solver.ModeSolver.get_solver_summary">
+<span class="sig-name descname"><span class="pre">get_solver_summary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/photonic_mode_solver/solver.html#ModeSolver.get_solver_summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#photonic_mode_solver.solver.ModeSolver.get_solver_summary" title="Link to this definition"></a></dt>
+<dd><p>Get summary of solver configuration.</p>
+</dd></dl>
+
+</dd></dl>
+
+<p>### WaveguideStructure</p>
+<p>Waveguide structure definition with analytical solutions.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="photonic_mode_solver.structures.WaveguideStructure">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">photonic_mode_solver.structures.</span></span><span class="sig-name descname"><span class="pre">WaveguideStructure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">core_material</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cladding_material</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wavelength</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gds_file_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gds_layer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">klayout_file_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">klayout_layer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">klayout_cell_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/photonic_mode_solver/structures.html#WaveguideStructure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#photonic_mode_solver.structures.WaveguideStructure" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Basic photonic waveguide structure.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="photonic_mode_solver.structures.WaveguideStructure.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">core_material</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cladding_material</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wavelength</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gds_file_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gds_layer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">klayout_file_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">klayout_layer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">klayout_cell_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/photonic_mode_solver/structures.html#WaveguideStructure.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#photonic_mode_solver.structures.WaveguideStructure.__init__" title="Link to this definition"></a></dt>
+<dd><p>Initialize waveguide structure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>width</strong> – Waveguide width</p></li>
+<li><p><strong>height</strong> – Waveguide height</p></li>
+<li><p><strong>core_material</strong> – Core material properties</p></li>
+<li><p><strong>cladding_material</strong> – Cladding material properties</p></li>
+<li><p><strong>wavelength</strong> – Operating wavelength</p></li>
+<li><p><strong>gds_file_path</strong> – Path to GDS file (for complex geometries)</p></li>
+<li><p><strong>gds_layer</strong> – Layer number in GDS file</p></li>
+<li><p><strong>klayout_file_path</strong> – Path to KLayout GDS file (enhanced support)</p></li>
+<li><p><strong>klayout_layer</strong> – Layer number in KLayout file</p></li>
+<li><p><strong>klayout_cell_name</strong> – Cell name in KLayout file</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="photonic_mode_solver.structures.WaveguideStructure.get_mesh">
+<span class="sig-name descname"><span class="pre">get_mesh</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/photonic_mode_solver/structures.html#WaveguideStructure.get_mesh"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#photonic_mode_solver.structures.WaveguideStructure.get_mesh" title="Link to this definition"></a></dt>
+<dd><p>Get mesh for the structure.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="photonic_mode_solver.structures.WaveguideStructure.get_materials">
+<span class="sig-name descname"><span class="pre">get_materials</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/photonic_mode_solver/structures.html#WaveguideStructure.get_materials"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#photonic_mode_solver.structures.WaveguideStructure.get_materials" title="Link to this definition"></a></dt>
+<dd><p>Get material properties.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="photonic_mode_solver.structures.WaveguideStructure.analytical_modes">
+<span class="sig-name descname"><span class="pre">analytical_modes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/photonic_mode_solver/structures.html#WaveguideStructure.analytical_modes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#photonic_mode_solver.structures.WaveguideStructure.analytical_modes" title="Link to this definition"></a></dt>
+<dd><p>Get analytical mode solutions for validation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="photonic_mode_solver.structures.WaveguideStructure.create_photon_source">
+<span class="sig-name descname"><span class="pre">create_photon_source</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wavelength</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beam_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beam_profile</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'gaussian'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/photonic_mode_solver/structures.html#WaveguideStructure.create_photon_source"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#photonic_mode_solver.structures.WaveguideStructure.create_photon_source" title="Link to this definition"></a></dt>
+<dd><p>Create a photon source for beam propagation simulations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>wavelength</strong> – Wavelength of the photon source</p></li>
+<li><p><strong>beam_width</strong> – Beam width in micrometers</p></li>
+<li><p><strong>beam_profile</strong> – Type of beam profile (‘gaussian’, ‘plane’, etc.)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Source definition dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<p>## Validation Framework</p>
+<p>The package includes a comprehensive validation framework that:
+- Provides analytical solutions for standard waveguide modes
+- Enables tight error validation (sub-1% targets)
+- Supports convergence testing and error analysis</p>
+<p>## License</p>
+<p>MIT License</p>
+<p>## Authors</p>
+<p>Photonic Solver Team</p>
+<p>## Contact</p>
+<p><a class="reference external" href="mailto:contact&#37;&#52;&#48;photonic-solver&#46;org">contact<span>&#64;</span>photonic-solver<span>&#46;</span>org</a></p>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Photonic Solver Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
