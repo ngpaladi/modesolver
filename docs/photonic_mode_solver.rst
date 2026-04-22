@@ -25,7 +25,7 @@ photonic_mode_solver.pinn module
    :undoc-members:
    :show-inheritance:
 
-photonic_mode_solver.pinn\_training module
+photonic_mode_solver.pinn_training module
 ------------------------------------------
 
 .. automodule:: photonic_mode_solver.pinn_training
