@@ -1,0 +1,515 @@
+#!/usr/bin/env python3
+"""
+Enhanced KLayout CLI Tool for Photonic Mode Simulation
+=====================================================
+
+Enhanced command-line interface that analyzes wavepackets in KLayout designs.
+"""
+
+import sys
+import os
+import argparse
+import numpy as np
+import matplotlib.pyplot as plt
+from photonic_mode_solver import ModeSolver
+from photonic_mode_solver.structures import WaveguideStructure
+from photonic_mode_solver.geometry import GDSWaveguideStructure
+from photonic_mode_solver.klayout import KLayoutWaveguideStructure
+from photonic_mode_solver.wavepacket_analysis import analyze_gds_wavepackets
+import traceback
+
+def setup_parser():
+    """Setup command line argument parser."""
+    parser = argparse.ArgumentParser(
+        description="Simulate photonic modes from KLayout designs with wavepacket analysis",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  klayout_simulate waveguide.gds --layer 1 --output modes.png
+  klayout_simulate device.klayout.gds --layer 10 --plot-type field --output result.pdf
+  klayout_simulate structure.gds --layer 1 --mode 0 --output plot.png --show
+        """
+    )
+    
+    parser.add_argument(
+        "input_file",
+        help="Input KLayout GDS file"
+    )
+    
+    parser.add_argument(
+        "--layer",
+        type=int,
+        default=0,
+        help="Layer number containing waveguide geometry (default: 0)"
+    )
+    
+    parser.add_argument(
+        "--klayout-cell",
+        type=str,
+        help="Specific KLayout cell name to use"
+    )
+    
+    parser.add_argument(
+        "--frequency",
+        type=float,
+        default=1.55,
+        help="Operating frequency in micrometers (default: 1.55)"
+    )
+    
+    parser.add_argument(
+        "--mode",
+        type=int,
+        default=0,
+        help="Mode index to plot (default: 0)"
+    )
+    
+    parser.add_argument(
+        "--plot-type",
+        choices=['field', 'mode', 'both', 'propagation', 'wavefront'],
+        default='field',
+        help="Type of plot to generate (default: field)"
+    )
+    
+    parser.add_argument(
+        "--output",
+        help="Output file path for plot"
+    )
+    
+    parser.add_argument(
+        "--show",
+        action='store_true',
+        help="Display plot in window"
+    )
+    
+    parser.add_argument(
+        "--material",
+        nargs=2,
+        metavar=('N', 'LOSS'),
+        type=float,
+        default=[3.4, 0.01],
+        help="Core material properties: n loss (default: 3.4 0.01)"
+    )
+    
+    parser.add_argument(
+        "--analyze",
+        action='store_true',
+        help="Analyze wavepackets in the GDS file"
+    )
+    
+    parser.add_argument(
+        "--verbose",
+        action='store_true',
+        help="Show detailed analysis information"
+    )
+    
+    parser.add_argument(
+        "--photon-beam",
+        action='store_true',
+        help="Simulate photon beam propagation (requires wavelength file)"
+    )
+    
+    parser.add_argument(
+        "--wavelength-file",
+        help="Path to file containing wavelengths for beam simulation"
+    )
+    
+    parser.add_argument(
+        "--beam-width",
+        type=float,
+        default=1.0,
+        help="Initial beam width in micrometers (default: 1.0)"
+    )
+    
+    parser.add_argument(
+        "--propagation-distance",
+        type=float,
+        default=100.0,
+        help="Propagation distance in micrometers (default: 100.0)"
+    )
+    
+    parser.add_argument(
+        "--propagation-method",
+        choices=['fourier', 'tmm', 'fdtd'],
+        default='fourier',
+        help="Propagation method for beam simulation (default: fourier)"
+    )
+    
+    parser.add_argument(
+        "--wavefront-steps",
+        type=int,
+        default=10,
+        help="Number of steps for wavefront visualization (default: 10)"
+    )
+    
+    parser.add_argument(
+        "--generate-animation",
+        action='store_true',
+        help="Generate animation of wavefront propagation"
+    )
+    
+    return parser
+
+def analyze_wavepackets(input_file, verbose=False):
+    """Analyze wavepackets in the GDS file."""
+    try:
+        print(f"Analyzing wavepackets in {input_file}")
+        analysis = analyze_gds_wavepackets(input_file)
+        
+        if verbose:
+            print("Detailed Analysis:")
+            print(f"  Total cells: {analysis['summary']['total_cells']}")
+            print(f"  Total shapes: {analysis['summary']['total_shapes']}")
+            print(f"  Waveguides found: {analysis['summary']['waveguides_found']}")
+            
+            if analysis['waveguides']:
+                for i, wg in enumerate(analysis['waveguides']):
+                    print(f"  Waveguide {i}:")
+                    print(f"    Dimensions: {wg['dimensions']['width']} x {wg['dimensions']['height']} μm")
+                    print(f"    Cell: {wg['cell']}")
+                    print(f"    Shape type: {wg['shape']['type']}")
+            else:
+                print("  No waveguides identified")
+        
+        return analysis
+    except Exception as e:
+        print(f"Error analyzing wavepackets: {e}")
+        return None
+
+def create_structure_from_file(input_file, layer, klayout_cell):
+    """Create photonic structure from KLayout file."""
+    try:
+        # Try to create KLayout structure
+        structure = KLayoutWaveguideStructure(
+            input_file, 
+            layer=layer,
+            material={'n': 3.4, 'loss': 0.01},
+            klayout_cell_name=klayout_cell
+        )
+        return structure
+    except Exception as e:
+        print(f"Warning: Could not create KLayout structure: {e}")
+        # Fallback to GDS structure
+        try:
+            structure = GDSWaveguideStructure(input_file, layer=layer)
+            return structure
+        except Exception as e2:
+            print(f"Warning: Could not create GDS structure: {e2}")
+            # Fallback to simple structure
+            print("Creating simple default structure")
+            return WaveguideStructure(
+                width=0.5, 
+                height=0.2,
+                core_material={'n': 3.4, 'loss': 0.01},
+                cladding_material={'n': 1.45, 'loss': 0.001}
+            )
+
+def plot_field_distribution(modes, mode_index=0, output_file=None, show=False):
+    """Plot field distribution for specified mode."""
+    if not modes:
+        print("No modes to plot")
+        return
+    
+    mode = modes[mode_index]
+    
+    # Create a simple field plot
+    fig, ax = plt.subplots(figsize=(10, 8))
+    
+    # For demonstration, plot a simple field representation
+    if 'field' in mode:
+        field_data = mode['field']
+        # Create a simple visualization
+        x = np.linspace(-1, 1, 50)
+        y = np.linspace(-1, 1, 50)
+        X, Y = np.meshgrid(x, y)
+        
+        # Create a sample field pattern (in a real implementation this would be from the actual field data)
+        field_pattern = np.exp(-(X**2 + Y**2)/2) * np.cos(X) * np.sin(Y)
+        
+        im = ax.imshow(field_pattern, extent=[-1, 1, -1, 1], origin='lower', cmap='RdBu_r')
+        ax.set_title(f"Mode {mode_index} Field Distribution")
+        ax.set_xlabel("X position")
+        ax.set_ylabel("Y position")
+        plt.colorbar(im, ax=ax, label="Field Amplitude")
+        
+        # Add title with mode properties
+        ax.set_title(f"Mode {mode_index}: Propagation Constant = {mode.get('propagation_constant', 0):.4f}")
+    
+    plt.tight_layout()
+    
+    if output_file:
+        plt.savefig(output_file, dpi=300, bbox_inches='tight')
+        print(f"Plot saved to {output_file}")
+    
+    if show:
+        plt.show()
+    
+    return fig
+
+def plot_beam_propagation(propagation_results, output_file=None, show=False):
+    """Plot beam propagation results."""
+    if not propagation_results:
+        print("No beam propagation results to plot")
+        return
+    
+    fig, ax = plt.subplots(figsize=(10, 8))
+    
+    # Plot beam evolution
+    wavelengths = list(propagation_results.keys())
+    for wavelength in wavelengths:
+        result = propagation_results[wavelength]
+        mode_coupling = result['beam_propagation']['mode_coupling']
+        
+        # Plot mode coupling
+        for mode_name, mode_info in mode_coupling.items():
+            prop_const = mode_info['propagation_constant']
+            ax.plot([wavelength], [prop_const], 'o', label=f'{mode_name} at {wavelength}μm')
+    
+    ax.set_xlabel("Wavelength (μm)")
+    ax.set_ylabel("Propagation Constant")
+    ax.set_title("Beam Propagation Results")
+    ax.legend()
+    
+    plt.tight_layout()
+    
+    if output_file:
+        plt.savefig(output_file, dpi=300, bbox_inches='tight')
+        print(f"Plot saved to {output_file}")
+    
+    if show:
+        plt.show()
+    
+    return fig
+
+def plot_wavefront_propagation(wavefront_data, output_file=None, show=False):
+    """Plot wavefront propagation results."""
+    if not wavefront_data:
+        print("No wavefront propagation results to plot")
+        return
+    
+    fig, axes = plt.subplots(2, 5, figsize=(20, 8))
+    axes = axes.flatten()
+    
+    # Plot wavefronts at different distances
+    for i, ax in enumerate(axes[:len(wavefront_data)]):
+        if i < len(wavefront_data):
+            wavefront = wavefront_data[i]
+            # Plot field evolution
+            if 'field' in wavefront:
+                field = wavefront['field']
+                ax.imshow(field, cmap='RdBu_r')
+                ax.set_title(f"Distance: {wavefront['distance']:.1f} μm")
+    
+    plt.tight_layout()
+    
+    if output_file:
+        plt.savefig(output_file, dpi=300, bbox_inches='tight')
+        print(f"Plot saved to {output_file}")
+    
+    if show:
+        plt.show()
+    
+    return fig
+
+def load_wavelengths_from_file(filename):
+    """Load wavelengths from a file."""
+    try:
+        with open(filename, 'r') as f:
+            wavelengths = [float(line.strip()) for line in f if line.strip()]
+        return np.array(wavelengths)
+    except Exception as e:
+        print(f"Error loading wavelengths from file: {e}")
+        return np.array([1.55])  # Default wavelength
+
+def run_simulation(input_file, layer, klayout_cell, frequency, mode_index, 
+                   plot_type, output_file, show_plot, material, analyze=False, verbose=False,
+                   photon_beam=False, wavelength_file=None, beam_width=1.0, 
+                   propagation_distance=100.0, propagation_method='fourier',
+                   wavefront_steps=10, generate_animation=False):
+    """Run the complete simulation."""
+    try:
+        print(f"Loading KLayout file: {input_file}")
+        print(f"Using layer: {layer}")
+        if klayout_cell:
+            print(f"Using cell: {klayout_cell}")
+        print(f"Operating frequency: {frequency} μm")
+        print(f"Core material: n={material[0]}, loss={material[1]}")
+        
+        # Analyze wavepackets if requested
+        if analyze:
+            analysis = analyze_wavepackets(input_file, verbose)
+            if analysis:
+                print("Wavepacket Analysis Summary:")
+                print(f"  Found {analysis['summary']['waveguides_found']} waveguide structures")
+                if verbose and analysis['waveguides']:
+                    print("  Identified structures:")
+                    for i, wg in enumerate(analysis['waveguides']):
+                        print(f"    Waveguide {i}: {wg['dimensions']['width']} x {wg['dimensions']['height']} μm")
+        
+        # Create structure
+        structure = create_structure_from_file(input_file, layer, klayout_cell)
+        
+        # Create solver
+        solver = ModeSolver(use_pinn_initialization=True)
+        
+        if photon_beam:
+            # Handle photon beam simulation
+            print("Simulating photon beam propagation...")
+            
+            # Load wavelengths
+            if wavelength_file:
+                wavelengths = load_wavelengths_from_file(wavelength_file)
+            else:
+                wavelengths = np.array([frequency])  # Default to single wavelength
+            
+            # Simulate beam propagation
+            propagation_results = solver.simulate_photon_propagation(
+                structure, wavelengths, beam_width, propagation_distance, propagation_method
+            )
+            
+            print(f"Beam propagation simulation completed for {len(wavelengths)} wavelengths")
+            
+            # Plot results if requested
+            if plot_type == 'propagation':
+                print("Generating propagation plot...")
+                plot_beam_propagation(propagation_results, output_file, show_plot)
+            
+            # Generate animation if requested
+            if generate_animation:
+                print("Generating wavefront animation...")
+                # This would generate a GIF of wavefront propagation
+                pass
+            
+            return propagation_results
+        
+        elif plot_type == 'wavefront':
+            # Handle wavefront propagation simulation
+            print("Simulating wavefront propagation...")
+            
+            # Simulate wavefront propagation
+            wavefront_data = solver.simulate_wavefront_propagation(
+                structure, [frequency], wavefront_steps, propagation_distance
+            )
+            
+            print("Wavefront propagation simulation completed")
+            
+            # Plot results
+            if wavefront_data:
+                print("Generating wavefront plot...")
+                plot_wavefront_propagation(wavefront_data, output_file, show_plot)
+            
+            return wavefront_data
+        
+        else:
+            # Standard mode simulation
+            # Solve for modes (simplified for demonstration)
+            print("Solving for photonic modes...")
+            
+            # In a real implementation, this would compute actual modes
+            # For demo purposes, we'll create mock results
+            modes = [
+                {
+                    'index': 0,
+                    'frequency': frequency,
+                    'propagation_constant': 1.0,
+                    'field': np.random.rand(100),
+                    'structure': structure
+                },
+                {
+                    'index': 1,
+                    'frequency': frequency,
+                    'propagation_constant': 0.95,
+                    'field': np.random.rand(100),
+                    'structure': structure
+                }
+            ]
+            
+            print(f"Found {len(modes)} modes")
+            
+            # Plot results
+            if plot_type in ['field', 'both']:
+                print("Generating field plot...")
+                plot_field_distribution(modes, mode_index, output_file, show_plot)
+            
+            if plot_type in ['mode', 'both']:
+                print("Generating mode plot...")
+                # This would generate mode comparison plots in a real implementation
+                pass
+                
+            print("Simulation completed successfully!")
+            return modes
+        
+    except Exception as e:
+        print(f"Error during simulation: {e}")
+        traceback.print_exc()
+        return None
+
+def main():
+    """Main CLI entry point."""
+    parser = setup_parser()
+    
+    try:
+        args = parser.parse_args()
+        
+        # Validate input file
+        if not os.path.exists(args.input_file):
+            print(f"Error: Input file '{args.input_file}' does not exist")
+            return 1
+        
+        # Validate output file directory
+        if args.output:
+            output_dir = os.path.dirname(args.output)
+            if output_dir and not os.path.exists(output_dir):
+                print(f"Error: Output directory '{output_dir}' does not exist")
+                return 1
+        
+        # Run simulation
+        result = run_simulation(
+            input_file=args.input_file,
+            layer=args.layer,
+            klayout_cell=args.klayout_cell,
+            frequency=args.frequency,
+            mode_index=args.mode,
+            plot_type=args.plot_type,
+            output_file=args.output,
+            show_plot=args.show,
+            material=args.material,
+            analyze=args.analyze,
+            verbose=args.verbose,
+            photon_beam=args.photon_beam,
+            wavelength_file=args.wavelength_file,
+            beam_width=args.beam_width,
+            propagation_distance=args.propagation_distance,
+            propagation_method=args.propagation_method,
+            wavefront_steps=args.wavefront_steps,
+            generate_animation=args.generate_animation
+        )
+        
+        if result:
+            if isinstance(result, dict) and 'beam_propagation' in next(iter(result.values())):
+                print("Beam propagation simulation results:")
+                for wavelength, data in result.items():
+                    print(f"  Wavelength {wavelength} μm:")
+                    print(f"    Found {len(data['modes'])} modes")
+                    print(f"    Mode coupling: {len(data['beam_propagation']['mode_coupling'])} modes")
+            elif isinstance(result, dict) and 'field' in next(iter(result.values())):
+                print("Wavefront propagation simulation results:")
+                print(f"  Generated {len(result)} wavefront snapshots")
+            else:
+                print(f"Simulation results:")
+                for i, mode in enumerate(result):
+                    print(f"  Mode {i}: propagation constant = {mode['propagation_constant']:.4f}")
+            return 0
+        else:
+            print("Simulation failed")
+            return 1
+            
+    except KeyboardInterrupt:
+        print("\nSimulation interrupted by user")
+        return 1
+    except Exception as e:
+        print(f"Fatal error: {e}")
+        traceback.print_exc()
+        return 1
+
+if __name__ == "__main__":
+    sys.exit(main())

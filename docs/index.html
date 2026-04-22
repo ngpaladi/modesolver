@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Photonic Mode Solver Documentation</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        .note {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-left: 4px solid #2196f3;
+            margin: 20px 0;
+        }
+        .section {
+            margin: 20px 0;
+        }
+        code {
+            background-color: #f5f5f5;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Photonic Mode Solver Documentation</h1>
+        
+        <div class="note">
+            <p>This documentation site is automatically generated from the photonic-mode-solver package.</p>
+            <p>For the latest documentation, visit the <a href="https://github.com/yourusername/photonic-mode-solver">GitHub repository</a>.</p>
+        </div>
+
+        <div class="section">
+            <h2>About</h2>
+            <p>This package implements a hybrid Finite Element Method (FEM) and Physics-Informed Neural Network (PINN) approach for solving electromagnetic mode problems in photonic chips.</p>
+        </div>
+
+        <div class="section">
+            <h2>Installation</h2>
+            <p>Install using pip:</p>
+            <code>pip install photonic-mode-solver</code>
+        </div>
+
+        <div class="section">
+            <h2>Usage Example</h2>
+            <pre><code>from photonic_mode_solver import ModeSolver
+from photonic_mode_solver.structures import WaveguideStructure
+
+# Create structure
+structure = WaveguideStructure(width=0.5, height=0.2)
+
+# Create hybrid solver
+solver = ModeSolver(use_pinn_initialization=True)
+
+# Solve for modes
+modes = solver.solve(structure)</code></pre>
+        </div>
+
+        <div class="section">
+            <h2>Documentation</h2>
+            <p>Full API documentation is available in the <a href="https://github.com/yourusername/photonic-mode-solver">GitHub repository</a>.</p>
+        </div>
+    </div>
+</body>
+</html>

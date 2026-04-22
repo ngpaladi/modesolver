@@ -1,0 +1,65 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+dist/
+build/
+*.egg-info/
+
+# Distribution files
+*.egg
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Virtual environments
+venv/
+env/
+.venv/
+venv*
+env*
+.venv*
+
+# Local configuration files
+.env
+.local
+
+# Documentation build files
+docs/_build/
+docs/.doctrees/
+
+# Test coverage
+htmlcov/
+.coverage
+.tox/
+
+# PyCharm
+.idea/
+
+# Visual Studio Code
+.vscode/
+
+# Jupyter Notebook
+*.ipynb_checkpoints
+
+# Temporary files
+*~
+*.tmp
+*.temp
+
+# Logs
+*.log
+
+# OS files
+Desktop.ini
+ehthumbs.db

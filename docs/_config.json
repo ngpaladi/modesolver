@@ -1,0 +1,10 @@
+{
+  "version": "1.0",
+  "build": {
+    "src": "docs",
+    "dist": "_build"
+  },
+  "routes": [
+    { "src": "/.*", "dest": "/index.html" }
+  ]
+}
